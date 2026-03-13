@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="180" viewBox="0 0 420 180" fill="none">
+  <rect width="420" height="180" rx="18" fill="#0b1116"/>
+  <rect x="28" y="62" width="286" height="68" rx="10" fill="#cc1f2f"/>
+  <rect x="250" y="38" width="110" height="92" rx="12" fill="#d62c3f"/>
+  <rect x="260" y="50" width="88" height="30" rx="5" fill="#92b4d9"/>
+  <rect x="44" y="76" width="180" height="12" rx="3" fill="#f6c44f"/>
+  <rect x="44" y="95" width="180" height="8" rx="2" fill="#f0f3f6"/>
+  <rect x="28" y="120" width="332" height="8" fill="#2a333d"/>
+  <circle cx="92" cy="136" r="22" fill="#161b21"/>
+  <circle cx="92" cy="136" r="10" fill="#9aa9b7"/>
+  <circle cx="292" cy="136" r="22" fill="#161b21"/>
+  <circle cx="292" cy="136" r="10" fill="#9aa9b7"/>
+  <text x="56" y="112" fill="#f8fbff" font-size="28" font-family="Arial Black">FDNY</text>
+  <text x="274" y="106" fill="#f8fbff" font-size="18" font-family="Arial Black">ENGINE</text>
+</svg>

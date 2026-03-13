@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Box Alarm Web Prototype</title>
+  <link rel="stylesheet" href="./vendor/leaflet.1.9.4.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div>
+        <h1>BOX ALARM</h1>
+        <p class="subtitle">Web Sandbox Prototype</p>
+      </div>
+      <div class="topbar-right">
+        <div id="playerSummary" class="player-summary"></div>
+        <div id="buildStamp" class="build-stamp"></div>
+      </div>
+    </header>
+
+    <main>
+      <section id="menuScreen" class="screen">
+        <div class="menu-stage">
+          <div class="menu-orb orb-a"></div>
+          <div class="menu-orb orb-b"></div>
+          <div class="menu-orb orb-c"></div>
+          <div class="menu-wizard" id="menuWizard">
+            <div class="menu-progress">
+              <span id="menuProgress"></span>
+            </div>
+            <div id="menuStepPills" class="menu-stepper"></div>
+            <h2 id="menuStepHeading">Box Alarm</h2>
+            <p id="menuStepSubheading">Build your department, dispatch incidents, command scenes.</p>
+            <div id="menuChoices" class="menu-choices"></div>
+            <div class="menu-actions">
+              <button id="menuBackBtn" class="btn menu-back hidden" type="button" onclick="window.BoxAlarmMenuBack && window.BoxAlarmMenuBack()">Back</button>
+              <button id="menuNextBtn" class="btn btn-primary" type="button" onclick="window.BoxAlarmMenuNext && window.BoxAlarmMenuNext()">Play</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="mapScreen" class="screen hidden">
+        <div id="mapViewport" class="map-viewport">
+          <div id="osmMap" class="osm-map"></div>
+
+          <div class="hud-strip hud-top">
+            <div id="mapStatusText">Choose station placement.</div>
+            <div class="hud-actions">
+              <button id="newMissionBtn" class="btn">Force Test Call</button>
+              <button id="mapPauseBtn" class="btn">Pause (Space)</button>
+            </div>
+          </div>
+
+          <div id="stationSetup" class="station-popup hidden">
+            <div class="station-art-wrap">
+              <img src="./assets/fdny-engine.svg" alt="Engine preview">
+            </div>
+            <div class="station-setup-copy">
+              <h3>Build First Station</h3>
+              <p id="deptSummary"><strong>Department:</strong> --</p>
+              <div class="station-finance-row">
+                <span id="stationBudget" class="finance-pill">Budget: $50,000</span>
+                <span class="finance-pill">Station Cost: $50,000</span>
+              </div>
+              <label class="engine-number-field" for="starterEngineInput">
+                Starter Engine Number
+                <input id="starterEngineInput" type="number" min="1" max="9999" step="1" value="312">
+              </label>
+              <p id="starterEngineSpecs">Pump: 2,000 GPM | Tank: 500 gal | First-due structural tools</p>
+              <div id="starterEngineChoices" class="engine-choice-grid"></div>
+              <p>Select the engine company number, then click to arm station placement on map.</p>
+              <button id="beginPlacementBtn" class="btn btn-primary">Build + Begin Placement</button>
+            </div>
+          </div>
+
+          <div id="callActionPanel" class="call-panel hidden">
+            <div id="callPanelSummary"></div>
+            <div id="companySelection" class="company-selection"></div>
+            <div class="call-panel-actions">
+              <button id="respondBtn" class="btn btn-primary">Respond</button>
+              <button id="viewSceneBtn" class="btn">View Scene</button>
+            </div>
+          </div>
+
+          <div class="incident-feed" id="incidentFeed"></div>
+        </div>
+      </section>
+
+      <section id="loadingScreen" class="screen hidden">
+        <div class="loading-wrap">
+          <div class="cab-overlay">
+            <div class="dashboard-shell">
+              <div class="dashboard-topbar">
+                <strong>MOBILE DATA TERMINAL</strong>
+                <span class="status-pill">EN ROUTE</span>
+                <span class="status-pill">FIRE OPS NET</span>
+              </div>
+              <div class="laptop-card">
+                <h2>Incident Packet</h2>
+                <div class="mdt-grid">
+                  <div class="mdt-item"><label>Assignment</label><p id="loadingBuilding"></p></div>
+                  <div class="mdt-item"><label>Caller Traffic</label><p id="loadingCaller"></p></div>
+                  <div class="mdt-item"><label>ETA</label><p id="loadingEta"></p></div>
+                  <div class="mdt-item"><label>Weather</label><p id="loadingWeather"></p></div>
+                  <div class="mdt-item"><label>Water Supply</label><p id="loadingHydrants"></p></div>
+                  <div class="mdt-item"><label>Occupancy</label><p id="loadingOccupancy"></p></div>
+                  <div class="mdt-item"><label>Preplan</label><p id="loadingPreplan"></p></div>
+                  <div class="mdt-item"><label>Tactical</label><p id="loadingTactical"></p></div>
+                </div>
+                <div class="dash-footer">Turnout complete. Stand by for arrival report.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="sceneScreen" class="screen hidden">
+        <div class="scene-fullscreen" id="sceneRoot">
+          <div id="scene3dHost" class="scene3d-host"></div>
+
+          <div class="scene-overlay scene-top">
+            <div id="sceneMeta" class="meta-strip"></div>
+            <div id="escalationBadge" class="badge">Escalation</div>
+          </div>
+
+          <aside class="scene-overlay scene-left icon-rail" id="companyHud" aria-label="Unit icons"></aside>
+
+          <aside class="scene-overlay scene-right icon-rail radio-rail" aria-label="Radio traffic">
+            <div class="rail-icon" title="Radio feed"><img src="./assets/ui/ic-radio.svg" alt="Radio"></div>
+            <div id="radioLog" class="radio-log"></div>
+          </aside>
+
+          <div class="scene-overlay scene-bottom">
+            <button id="pauseBtn" class="hud-icon-btn" title="Pause or resume"><img src="./assets/ui/ic-pause.svg" alt="Pause"></button>
+            <button id="mapBtn" class="hud-icon-btn map" title="View map"><img src="./assets/ui/ic-map.svg" alt="Map"></button>
+            <div id="sceneStatus" class="scene-status-strip"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script>
+    (function () {
+      var BUILD = 'dev-2026-03-12-10';
+      window.BOXALARM_BUILD = BUILD;
+
+      function loadScript(src) {
+        return new Promise(function (resolve, reject) {
+          var script = document.createElement('script');
+          script.src = src;
+          script.async = true;
+          script.onload = function () { resolve(src); };
+          script.onerror = function () { reject(new Error('Failed to load ' + src)); };
+          document.body.appendChild(script);
+        });
+      }
+
+      function loadAny(urls, checker) {
+        var idx = 0;
+        function next() {
+          if (idx >= urls.length) {
+            return Promise.reject(new Error('all-cdn-failed'));
+          }
+          var url = urls[idx++];
+          return loadScript(url).then(function () {
+            if (!checker()) {
+              throw new Error('loaded-but-missing-global');
+            }
+            return true;
+          }).catch(function () {
+            return next();
+          });
+        }
+        return next();
+      }
+
+      function showBootWarning(message) {
+        var toast = document.getElementById('toast');
+        if (!toast) {
+          return;
+        }
+        toast.textContent = message;
+        toast.classList.remove('hidden');
+      }
+
+      var leafletSources = [
+        './vendor/leaflet.1.9.4.js?v=' + BUILD,
+        'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+        'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js'
+      ];
+
+      var threeModuleSources = [
+        './vendor/three.module.r164.js?v=' + BUILD,
+        'https://unpkg.com/three@0.164.1/build/three.module.js',
+        'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js'
+      ];
+
+      function loadThreeModule(urls) {
+        var idx = 0;
+        function next() {
+          if (idx >= urls.length) {
+            return Promise.reject(new Error('three-load-failed'));
+          }
+          var url = urls[idx++];
+          return import(url).then(function (mod) {
+            if (!mod) {
+              throw new Error('empty-module');
+            }
+            window.THREE = mod;
+            return true;
+          }).catch(function () {
+            return next();
+          });
+        }
+        return next();
+      }
+
+      Promise.allSettled([
+        loadAny(leafletSources, function () { return !!window.L; }),
+        loadThreeModule(threeModuleSources)
+      ]).then(function (results) {
+        var missing = [];
+        if (results[0].status === 'rejected') {
+          missing.push('Leaflet');
+        }
+        if (results[1].status === 'rejected') {
+          missing.push('Three.js');
+        }
+
+        return loadScript('./js/simulation.js?v=' + BUILD).then(function () {
+          return loadScript('./js/assets.js?v=' + BUILD);
+        }).then(function () {
+          return loadScript('./js/app.js?v=' + BUILD);
+        }).then(function () {
+          if (missing.length) {
+            showBootWarning('Warning: ' + missing.join(', ') + ' failed to load. Fallback mode enabled.');
+          }
+        });
+      }).catch(function () {
+        showBootWarning('Failed to boot game scripts. Check local server and refresh.');
+      });
+    })();
+  </script>
+</body>
+</html>
